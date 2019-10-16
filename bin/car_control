@@ -1,0 +1,6 @@
+#! /usr/bin/env python
+
+import car_control.car_control
+
+if __name__ == '__main__':
+    car_control.car_control.main()

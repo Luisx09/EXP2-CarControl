@@ -1,0 +1,6 @@
+#! /usr/bin/env python
+
+import img_proc.img_proc
+
+if __name__ == '__main__':
+    img_proc.img_proc.main()

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(lrodriguez-umd)
 
 find_package(catkin REQUIRED)
-find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs rospy)
+find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs rospy sensor_msgs)
 
 ###################################
 ## catkin specific configuration ##
@@ -46,5 +46,7 @@ target_link_libraries(rand_pub ${catkin_LIBRARIES})
 catkin_python_setup()
 
 catkin_install_python(PROGRAMS bin/car_control
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+  catkin_install_python(PROGRAMS bin/img_proc
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 

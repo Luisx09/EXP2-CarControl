@@ -5,12 +5,12 @@ import cv2
 import cv2 as cv
 import numpy as np
 from sensor_msgs.msg import Image
+from std_msgs.msg import Float32
 from cv_bridge import CvBridge, CvBridgeError
 
 bridge = CvBridge()
 
 def imFill(im_in):
-     
     # Copy the thresholded image.
     im_floodfill = im_in.copy()
      
@@ -31,6 +31,11 @@ def imFill(im_in):
     return im_out
 
 def find_ball(data):
+    global pub_dist
+    # Get current parameter values and store them
+    color_num = rospy.get_param('img_proc/color', 60)
+    sensitivity = rospy.get_param('img_proc/sensitivity', 20)
+    
     cv_image = bridge.imgmsg_to_cv2(data, 'rgb8')
     bgr_image = cv2.medianBlur(cv_image, 3)
     #bgr_image = cv_image
@@ -39,13 +44,17 @@ def find_ball(data):
     hsv_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2HSV)
     
     # Threshold the HSV image, keep only the green pixels
-    green_hue_image = cv2.inRange(hsv_image, (40, 100, 100), (80, 255, 255))
-
+    green_hue_image = cv2.inRange(hsv_image, (color_num - sensitivity, 100, 100), (color_num + sensitivity, 255, 255))
     green_hue_image = cv2.GaussianBlur(green_hue_image, (9, 9), 2, 2)
 
     fill_image = imFill(green_hue_image)
+    white_pix = np.sum(fill_image > 0)
     #fill_image = cv2.cvtColor(fill_image, cv2.COLOR_HSV2GRAY)
-    print np.sum(fill_image > 0)
+    rospy.loginfo('White Pixels: '+str(white_pix))
+    
+    calc_dist = (-8.6 * (10 ** -12)) * (white_pix ** 3) + (4.1 * (10 ** -7)) * (white_pix ** 2) - (0.0069 * white_pix) + 63
+    rospy.loginfo('Distance to Ball: '+str(round(calc_dist, 2)))
+    pub_dist.publish(calc_dist)
     ## Use the Hough transform to detect circles in the combined threshold image
     #circles = cv2.HoughCircles(fill_image, cv2.HOUGH_GRADIENT, 1.2, 1200, 100, 20, 10, 12);
     
@@ -69,15 +78,14 @@ def find_ball(data):
 
 def main() :
 
-    # In ROS, nodes are uniquely named. If two nodes with the same
-    # name are launched, the previous one is kicked off. The
-    # anonymous=True flag means that rospy will choose a unique
-    # name for our 'listener' node so that multiple listeners can
-    # run simultaneously.
+    global pub_dist
     rospy.init_node('img_proc', anonymous=True)
+    #rospy.get_param('color', 60) # Green
+    #rospy.get_param('sensitivity', 20)
+    pub_dist = rospy.Publisher('/distance', Float32, queue_size=10)
 
     rospy.Subscriber("/usb_cam/image_raw", Image, find_ball)
 
     # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()	
+    rospy.spin()
 

@@ -43,6 +43,9 @@ target_link_libraries(hello_prime ${catkin_LIBRARIES})
 add_executable(rand_pub pubvel.cpp)
 target_link_libraries(rand_pub ${catkin_LIBRARIES})
 
+add_executable(pid_block pid_block.cpp)
+target_link_libraries(pid_block ${catkin_LIBRARIES})
+
 catkin_python_setup()
 
 catkin_install_python(PROGRAMS bin/car_control

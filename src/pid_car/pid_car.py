@@ -33,7 +33,13 @@ def fw_movement(data):
         bw.forward()
     else:
         bw.stop()
-    
+
+def estop():
+    bw.speed = 0
+    fw.turn(90)
+    pan_servo.write(90)
+    tilt_servo.write(90)
+
 def main():
 
     # In ROS, nodes are uniquely named. If two nodes with the same

@@ -3,4 +3,7 @@
 import pid_car.pid_car
 
 if __name__ == '__main__':
-    pid_car.pid_car.main()
+    try:
+        pid_car.pid_car.main()
+    except rospy.ROSInterruptException:
+        pid_car.pid_car.estop()

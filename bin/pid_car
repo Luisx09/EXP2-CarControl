@@ -1,0 +1,6 @@
+#! /usr/bin/env python
+
+import pid_car.pid_car
+
+if __name__ == '__main__':
+    pid_car.pid_car.main()

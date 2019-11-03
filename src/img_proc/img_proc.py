@@ -5,10 +5,11 @@ import cv2
 import cv2 as cv
 import numpy as np
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float32
+from std_msgs.msg import Float64
 from cv_bridge import CvBridge, CvBridgeError
 
 bridge = CvBridge()
+poly_dist = [-2.1 * 10 ** -13, 2.7 * 10 ** -8, -0.0012, 26]
 
 def imFill(im_in):
     # Copy the thresholded image.
@@ -51,9 +52,15 @@ def find_ball(data):
     white_pix = np.sum(fill_image > 0)
     #fill_image = cv2.cvtColor(fill_image, cv2.COLOR_HSV2GRAY)
     rospy.loginfo('White Pixels: '+str(white_pix))
-    
-    calc_dist = (-8.6 * (10 ** -12)) * (white_pix ** 3) + (4.1 * (10 ** -7)) * (white_pix ** 2) - (0.0069 * white_pix) + 63
-    rospy.loginfo('Distance to Ball: '+str(round(calc_dist, 2)))
+
+    #calc_dist = np.polyval(poly_dist, white_pix)
+    if white_pix != 0:
+        calc_dist = 3625.15 * (white_pix ** -0.56)
+    else:
+        calc_dist = 75.0
+    if calc_dist < 0:
+        calc_dist = 0
+    rospy.loginfo('Distance to Ball: '+str(round(calc_dist, 4)))
     pub_dist.publish(calc_dist)
     ## Use the Hough transform to detect circles in the combined threshold image
     #circles = cv2.HoughCircles(fill_image, cv2.HOUGH_GRADIENT, 1.2, 1200, 100, 20, 10, 12);
@@ -82,7 +89,7 @@ def main() :
     rospy.init_node('img_proc', anonymous=True)
     #rospy.get_param('color', 60) # Green
     #rospy.get_param('sensitivity', 20)
-    pub_dist = rospy.Publisher('/distance', Float32, queue_size=10)
+    pub_dist = rospy.Publisher('/distance', Float64, queue_size=10)
 
     rospy.Subscriber("/usb_cam/image_raw", Image, find_ball)
 

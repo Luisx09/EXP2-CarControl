@@ -1,0 +1,20 @@
+<launch>
+	<node name="usb_cam" pkg="usb_cam" type="usb_cam_node">
+		<param name="pixel_format" value="yuyv"/>
+		<param name="framerate" value="10"/>
+	</node>
+	<node name="img_proc" pkg="lrodriguez-umd" type="img_proc"/>
+	<node name="pid_block" pkg="pid" type="controller" >
+      <param name="Kp" value="0.0" />
+      <param name="Ki" value="0.0" />
+      <param name="Kd" value="0.0" />
+      <param name="topic_from_controller" value="control_spd" />
+      <param name="topic_from_plant" value="distance" />
+      <param name="upper_limit" value="50" />
+      <param name="lower_limit" value="-50" />
+      <param name="windup_limit" value="10" />
+      <param name="max_loop_frequency" value="5.5" />
+      <param name="min_loop_frequency" value="3.0" />
+    </node>
+	<node name="pid_car" pkg="lrodriguez-umd" type="pid_car"/>
+</launch>

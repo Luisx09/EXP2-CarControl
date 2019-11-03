@@ -20,17 +20,17 @@ class SubscribeAndPublish
 
 	void pid_func(const std_msgs::Float32::ConstPtr& msg)
 	{
-		static float prev_error = 0;
-		static float accum_error = 0;
-		int Kp, Ki, Kd, setpoint;
-		float error, d_error, P, I, D, PID, output;
+		static double prev_error = 0;
+		static double accum_error = 0;
+		double Kp, Ki, Kd, setpoint;
+		double error, d_error, P, I, D, PID, output;
 		ROS_INFO("I heard: [%f]", msg->data);
-		n_.param("/gains/P", Kp, 0);
-		n_.param("/gains/I", Ki, 0);
-		n_.param("/gains/D", Kd, 0);
-		n_.param("set_point", setpoint, 20);
+		n_.param("/gains/P", Kp, 0.0);
+		n_.param("/gains/I", Ki, 0.0);
+		n_.param("/gains/D", Kd, 0.0);
+		n_.param("set_point", setpoint, 15.0);
 	
-		error = msg->data - (float)setpoint;
+		error = (double)msg->data - (double)setpoint;
 		P = Kp * error;
 	
 		accum_error += error;
@@ -43,15 +43,15 @@ class SubscribeAndPublish
 		PID = P + I + D;
 		geometry_msgs::Twist msg_out;
 
-		output = normalize (PID, setpoint);
+		output = saturate (PID);
 		msg_out.linear.x = output;
 		ROS_INFO("I say: [%f]", output);
 		pub_.publish(msg_out);
 	}
 
-	float normalize (float value, float max)
+	double saturate (double value)
 	{
-		float clip_val, norm_val;
+		float clip_val;
 		if (value > max)
 		{
 			clip_val = max;
@@ -65,11 +65,11 @@ class SubscribeAndPublish
 			clip_val = value;
 		}
 
-		norm_val = clip_val / max;
-		return norm_val;
+		return clip_val;
 	}
 
 	private:
+		double max = 100.0;
 		NodeHandle n_; 
 		Publisher pub_;
 		Subscriber sub_;

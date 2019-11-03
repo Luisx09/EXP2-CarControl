@@ -50,6 +50,9 @@ catkin_python_setup()
 
 catkin_install_python(PROGRAMS bin/car_control
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-  catkin_install_python(PROGRAMS bin/img_proc
+catkin_install_python(PROGRAMS bin/img_proc
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+catkin_install_python(PROGRAMS bin/pid_car
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 

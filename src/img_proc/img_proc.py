@@ -9,7 +9,6 @@ from std_msgs.msg import Float64
 from cv_bridge import CvBridge, CvBridgeError
 
 bridge = CvBridge()
-poly_dist = [-2.1 * 10 ** -13, 2.7 * 10 ** -8, -0.0012, 26]
 prev_dist = 0.0
 agg_dist = 0
 valid_counts = 0
@@ -40,7 +39,7 @@ def find_ball(data):
     # Get current parameter values and store them
     color_num = rospy.get_param('~color', 60)
     sensitivity = rospy.get_param('~sensitivity', 20)
-    samples = rospy.get_param('~samples', 3)
+    samples = rospy.get_param('~samples', 10)
     
     cv_image = bridge.imgmsg_to_cv2(data, 'rgb8')
     bgr_image = cv2.medianBlur(cv_image, 3)
@@ -64,16 +63,13 @@ def find_ball(data):
         agg_dist += calc_dist
         valid_counts += 1
         rospy.loginfo('Distance to Ball: '+str(round(calc_dist, 4)))
-    
-    if counter >= samples:
-        if valid_counts != 0:
-            mean_dist = agg_dist / valid_counts
-            pub_dist.publish(mean_dist)
-        valid_counts = 0
-        counter = 0
-        agg_dist = 0
-    else:
-        counter += 1
+    if valid_counts != 0:
+        mean_dist = agg_dist / valid_counts
+        pub_dist.publish(mean_dist)
+    if valid_counts >= samples:
+        agg_dist -= mean_dist
+        valid_counts -= 1
+
     ## Use the Hough transform to detect circles in the combined threshold image
     #circles = cv2.HoughCircles(fill_image, cv2.HOUGH_GRADIENT, 1.2, 1200, 100, 20, 10, 12);
     
